@@ -514,7 +514,7 @@ def new_game():
     with open(os.path.join('data', 'records_list'), 'r') as f:
         records = list(map(int, f.read().split()))
         records.append(score)
-        records = sorted(records, reverse=True)[:10]
+        records = sorted(records, reverse=True)[:15]
     with open(os.path.join('data', 'records_list'), 'w') as f:
         data = ''
         for r in records:
