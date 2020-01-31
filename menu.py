@@ -152,13 +152,12 @@ def new_game():
     balls = pygame.sprite.Group()
     energizers = pygame.sprite.Group()
     pacman = pygame.sprite.Sprite()
-    block = pygame.Surface((12, 12))
-    block.fill(pygame.Color('yellow'))
-    pacman.image = block
+    pacman.image = pygame.transform.scale(load_image('pacman.png', (255, 255, 255)), (24, 24))
     pacman.rect = pacman.image.get_rect()
-    pacman_direction = right
-    pacman.rect.x = 12 * 19 + 4
-    pacman.rect.y = 12 * 30 + 4
+    pacman_direction = None
+    pacman_sub_direction = None
+    pacman.rect.x = 12 * 19
+    pacman.rect.y = 12 * 30
     all_sprites.add(pacman)
     fps = 30
     size = (480, 530)
@@ -194,32 +193,44 @@ def new_game():
                     pacman.rect.x += 3
                     if pygame.sprite.spritecollideany(pacman, walls):
                         pacman.rect.x -= 3
+                        pacman_sub_direction = right
                     else:
                         pacman_direction = right
+                        pacman.image = pygame.transform.scale(load_image('pacman.png', (255, 255, 255)), (24, 24))
+                        pacman_sub_direction = None
                         pacman.rect.x -= 3
                 elif event.key == pygame.K_LEFT:
-                    pacman_direction = left
                     pacman.rect.x -= 3
                     if pygame.sprite.spritecollideany(pacman, walls):
                         pacman.rect.x += 3
+                        pacman_sub_direction = left
                     else:
                         pacman_direction = left
+                        pacman.image = pygame.transform.flip(pygame.transform.scale(
+                            load_image('pacman.png', (255, 255, 255)), (24, 24)), 1, 0)
+                        pacman_sub_direction = None
                         pacman.rect.x += 3
                 elif event.key == pygame.K_UP:
-                    pacman_direction = up
                     pacman.rect.y -= 3
                     if pygame.sprite.spritecollideany(pacman, walls):
                         pacman.rect.y += 3
+                        pacman_sub_direction = up
                     else:
                         pacman_direction = up
+                        pacman.image = pygame.transform.scale(
+                            load_image('pacman_up.png', (255, 255, 255)), (24, 24))
+                        pacman_sub_direction = None
                         pacman.rect.y += 3
                 elif event.key == pygame.K_DOWN:
-                    pacman_direction = down
                     pacman.rect.y += 3
                     if pygame.sprite.spritecollideany(pacman, walls):
                         pacman.rect.y -= 3
+                        pacman_sub_direction = down
                     else:
                         pacman_direction = down
+                        pacman.image = pygame.transform.flip(pygame.transform.scale(
+                            load_image('pacman_up.png', (255, 255, 255)), (24, 24)), 0, 1)
+                        pacman_sub_direction = None
                         pacman.rect.y -= 3
         screen.fill((0, 0, 0))
         if pacman_direction == right:
@@ -270,6 +281,77 @@ def new_game():
                 score += 50
                 state = boost
                 timer = 150
+        change = None
+        if pacman_sub_direction == right:
+            pacman.rect.x += 3
+            change = right
+            if pygame.sprite.spritecollideany(pacman, walls):
+                pacman.rect.x -= 3
+                change = None
+            elif pygame.sprite.spritecollideany(pacman, balls):
+                pygame.sprite.groupcollide(all_sprites, balls, dokilla=False, dokillb=True)
+                score += 10
+            elif pygame.sprite.spritecollideany(pacman, energizers):
+                pygame.sprite.groupcollide(all_sprites, energizers, dokilla=False, dokillb=True)
+                score += 50
+                state = boost
+                timer = 150
+        elif pacman_sub_direction == left:
+            pacman.rect.x -= 3
+            change = left
+            if pygame.sprite.spritecollideany(pacman, walls):
+                pacman.rect.x += 3
+                change = None
+            if pygame.sprite.spritecollideany(pacman, balls):
+                pygame.sprite.groupcollide(all_sprites, balls, dokilla=False, dokillb=True)
+                score += 10
+            if pygame.sprite.spritecollideany(pacman, energizers):
+                pygame.sprite.groupcollide(all_sprites, energizers, dokilla=False, dokillb=True)
+                score += 50
+                state = boost
+                timer = 150
+        elif pacman_sub_direction == up:
+            pacman.rect.y -= 3
+            change = up
+            if pygame.sprite.spritecollideany(pacman, walls):
+                pacman.rect.y += 3
+                change = None
+            if pygame.sprite.spritecollideany(pacman, balls):
+                pygame.sprite.groupcollide(all_sprites, balls, dokilla=False, dokillb=True)
+                score += 10
+            if pygame.sprite.spritecollideany(pacman, energizers):
+                pygame.sprite.groupcollide(all_sprites, energizers, dokilla=False, dokillb=True)
+                score += 50
+                state = boost
+                timer = 150
+        elif pacman_sub_direction == down:
+            pacman.rect.y += 3
+            change = down
+            if pygame.sprite.spritecollideany(pacman, walls):
+                pacman.rect.y -= 3
+                change = None
+            if pygame.sprite.spritecollideany(pacman, balls):
+                pygame.sprite.groupcollide(all_sprites, balls, dokilla=False, dokillb=True)
+                score += 10
+            if pygame.sprite.spritecollideany(pacman, energizers):
+                pygame.sprite.groupcollide(all_sprites, energizers, dokilla=False, dokillb=True)
+                score += 50
+                state = boost
+                timer = 150
+        if change is not None:
+            pacman_direction = change
+            if change == right:
+                pacman.image = pygame.transform.scale(load_image('pacman.png', (255, 255, 255)), (24, 24))
+            elif change == left:
+                pacman.image = pygame.transform.flip(pygame.transform.scale(
+                    load_image('pacman.png', (255, 255, 255)), (24, 24)), 1, 0)
+            elif change == up:
+                pacman.image = pygame.transform.scale(
+                    load_image('pacman_up.png', (255, 255, 255)), (24, 24))
+            elif change == down:
+                pacman.image = pygame.transform.flip(pygame.transform.scale(
+                    load_image('pacman_up.png', (255, 255, 255)), (24, 24)), 0, 1)
+            pacman_sub_direction = None
         pacman.rect.x = pacman.rect.x % 480
         if timer != 150 and timer != 0:
             timer -= 1
