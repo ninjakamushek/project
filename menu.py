@@ -100,6 +100,7 @@ def main_menu():
 
 
 def new_game():
+    win = False
     red_death = 0
     blue_death = 0
     pink_death = 0
@@ -577,14 +578,23 @@ def new_game():
         screen.blit(text, (text_x, text_y))
         if len(balls) == 0 and len(energizers) == 0:
             game = False
+            win = True
         pygame.display.flip()
     game = True
-    font = pygame.font.Font(os.path.join('data', 'PAC-FONT.TTF'), 15)
-    text = font.render('Game over', 1, (255, 255, 255))
-    text_x = 174
-    text_y = 216
-    screen.blit(text, (text_x, text_y))
+    if not win:
+        font = pygame.font.Font(os.path.join('data', 'PAC-FONT.TTF'), 15)
+        text = font.render('Game over', 1, (255, 255, 255))
+        text_x = 174
+        text_y = 216
+        screen.blit(text, (text_x, text_y))
+    else:
+        font = pygame.font.Font(os.path.join('data', 'PAC-FONT.TTF'), 15)
+        text = font.render('Game over', 1, (255, 255, 255))
+        text_x = 174
+        text_y = 216
+        screen.blit(text, (text_x, text_y))
     pygame.display.flip()
+    player_name = input()
     while game:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -594,13 +604,17 @@ def new_game():
                     game = False
     f.close()
     with open(os.path.join('data', 'records_list'), 'r') as f:
-        records = list(map(int, f.read().split()))
-        records.append(score)
-        records = sorted(records, reverse=True)[:15]
+        record_list = f.read().split()
+        new_list = []
+        for t in range(0, len(record_list), 2):
+            name_t, score_t = record_list[t], record_list[t + 1]
+            new_list.append([name_t, int(score_t)])
+        new_list.append([player_name, score])
+        new_list = sorted(new_list, key=lambda x: x[1], reverse=True)[:15]
     with open(os.path.join('data', 'records_list'), 'w') as f:
         data = ''
-        for r in records:
-            data += str(r)
+        for r in new_list:
+            data += r[0] + ' ' + str(r[1])
             data += '\n'
         f.truncate()
         f.write(data)
@@ -609,7 +623,7 @@ def new_game():
 
 def records():
     with open(os.path.join('data', 'records_list')) as f:
-        record_list = f.read().split()
+        record_list = f.read().split('\n')
         record_menu = True
         width = 600
         records_screen = pygame.display.set_mode((600, 700))
