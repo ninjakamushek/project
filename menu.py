@@ -9,6 +9,7 @@ music = pygame.mixer.music.load('music.mp3')
 pygame.mixer.music.play(-1)
 
 
+# classes for wall block, point balls, boosting balls
 class Wall(pygame.sprite.Sprite):
     def __init__(self, x, y):
         super().__init__()
@@ -42,6 +43,7 @@ class Energizer(pygame.sprite.Sprite):
         self.rect.y = y * 12
 
 
+# func for loading images from data
 def load_image(name, colorkey=None):
     fullname = os.path.join('data', name)
     image = pygame.image.load(fullname).convert()
@@ -54,6 +56,7 @@ def load_image(name, colorkey=None):
     return image
 
 
+# func for starting menu which u can launch unlimited times
 def main_menu():
     menu = pygame.display.set_mode((800, 600))
     menu.blit(pygame.transform.scale(load_image('menu_logo.jpg'), (800, 450)), (0, -100))
@@ -99,7 +102,9 @@ def main_menu():
         pygame.display.flip()
 
 
+# func for starting new game
 def new_game():
+    # initializing vars
     win = False
     red_death = 0
     blue_death = 0
@@ -115,6 +120,7 @@ def new_game():
     simple = 'simple'
     state = simple
     timer = 150
+    # initialixing sprites and spritegroups
     ghosts = pygame.sprite.Group()
     red_ghost = pygame.sprite.Sprite()
     block = pygame.Surface((24, 24))
@@ -163,6 +169,7 @@ def new_game():
     fps = 30
     size = (480, 530)
     screen = pygame.display.set_mode(size)
+    # reading map file and drawing the board
     f = open(os.path.join('data', 'map'))
     lines = f.read().split()
     for a in range(40):
@@ -183,6 +190,7 @@ def new_game():
     screen.blit(text, (text_x, text_y))
     pygame.display.flip()
     clock = pygame.time.Clock()
+    # starting game cycle
     while game:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -190,6 +198,7 @@ def new_game():
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     game = False
+                # choosing pacman direction
                 elif event.key == pygame.K_RIGHT:
                     pacman.rect.x += 3
                     if pygame.sprite.spritecollideany(pacman, walls):
@@ -234,6 +243,7 @@ def new_game():
                         pacman_sub_direction = None
                         pacman.rect.y -= 3
         screen.fill((0, 0, 0))
+        # depending on direction moving pacman
         if pacman_direction == right:
             pacman.rect.x += 3
             if pygame.sprite.spritecollideany(pacman, walls):
@@ -283,6 +293,7 @@ def new_game():
                 state = boost
                 timer = 150
         change = None
+        # checking opportunity of subdirection
         if pacman_sub_direction == right:
             pacman.rect.x += 3
             change = right
@@ -339,6 +350,7 @@ def new_game():
                 score += 50
                 state = boost
                 timer = 150
+        # in case of subdirectin is possible, to do move
         if change is not None:
             pacman_direction = change
             if change == right:
@@ -354,6 +366,7 @@ def new_game():
                     load_image('pacman_up.png', (255, 255, 255)), (24, 24)), 0, 1)
             pacman_sub_direction = None
         pacman.rect.x = pacman.rect.x % 480
+        # booster time and updating it
         if timer != 150 and timer != 0:
             timer -= 1
         elif timer == 150 and state == boost:
@@ -367,7 +380,9 @@ def new_game():
         walls.draw(screen)
         balls.draw(screen)
         energizers.draw(screen)
+        # moving of ghosts
         if state == boost:
+            # in case of booster time they dont gonna move, and if pacman hits them, they will die for a while
             block = pygame.Surface((24, 24))
             block.fill(pygame.Color('green'))
             red_ghost.image = block
@@ -401,6 +416,7 @@ def new_game():
                 orange_death += 1
                 score += 200
         else:
+            # elsse: they will follow pacman in horizontal and vertical coords
             block = pygame.Surface((24, 24))
             block.fill(pygame.Color('red'))
             red_ghost.image = block
@@ -545,6 +561,7 @@ def new_game():
                         orange_ghost.rect.x += 2
                         if pygame.sprite.spritecollideany(orange_ghost, walls):
                             orange_ghost.rect.x -= 2
+        # checking for the state of ghost: death time and respawn system
         if 91 > red_death > 0:
             red_death += 1
         elif red_death == 91:
@@ -576,6 +593,7 @@ def new_game():
         text_x = 10
         text_y = 490
         screen.blit(text, (text_x, text_y))
+        # checking for a winning condition
         if len(balls) == 0 and len(energizers) == 0:
             game = False
             win = True
@@ -589,7 +607,7 @@ def new_game():
         screen.blit(text, (text_x, text_y))
     else:
         font = pygame.font.Font(os.path.join('data', 'PAC-FONT.TTF'), 15)
-        text = font.render('Game over', 1, (255, 255, 255))
+        text = font.render('You win', 1, (255, 255, 255))
         text_x = 174
         text_y = 216
         screen.blit(text, (text_x, text_y))
@@ -603,6 +621,7 @@ def new_game():
                 if event.key == pygame.K_ESCAPE:
                     game = False
     f.close()
+    # reading and rewriting the record list file
     with open(os.path.join('data', 'records_list'), 'r') as f:
         record_list = f.read().split()
         new_list = []
@@ -621,6 +640,7 @@ def new_game():
     main_menu()
 
 
+# func to show top records
 def records():
     with open(os.path.join('data', 'records_list')) as f:
         record_list = f.read().split('\n')
@@ -651,4 +671,5 @@ def records():
         main_menu()
 
 
+# starting the game
 main_menu()
